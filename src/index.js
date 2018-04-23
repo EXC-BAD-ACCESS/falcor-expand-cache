@@ -12,7 +12,19 @@ export default function expandCache(cache) {
   function expandChild(child) {
     if (child.$type === 'atom') return child.value;
     if (child.$type === 'ref') return createNode(followPath(child.value));
-    if (child.$type === 'error') return new Error(child.value);
+    if (child.$type === 'error') {
+      if(child.value instanceof Error) {
+        return child.value;
+      } else if(typeof child.value === 'string') {
+        return new Error(child.value);
+      } else if(typeof child.value === 'object') {
+        var error = new Error(child.value.message);
+        Object.keys(child.value).forEach(function(key){
+          error[key] = child.value[key];
+        })
+        return error;
+      }
+    }
     // Unknown Sentinel
     if (child.$type) return undefined;
 
